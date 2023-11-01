@@ -39,8 +39,8 @@ void updateScreen(){
 
 int jump_count = 0;
 void processGame(){
-    if(IsKeyDown(KEY_RIGHT)) newPlayer->position.x += 3.0f;
-    if(IsKeyDown(KEY_LEFT)) newPlayer->position.x -= 3.0f;
+    if(IsKeyDown(KEY_RIGHT)) newPlayer->position.x += 4.0f;
+    if(IsKeyDown(KEY_LEFT)) newPlayer->position.x -= 4.0f;
 
     newPlayer->position.y += newPlayer->velocity;
     newPlayer->velocity += 0.4f;

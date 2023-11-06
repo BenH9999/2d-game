@@ -2,39 +2,55 @@
 
 Game::Game() {
     player = nullptr;
+    draw_offset = 0;
+    gameOver = 0;
 }
 
 void Game::initGame() {
     player = new Player;
-    InitWindow(800, 450, "2D Game");
+    player->setLives(2);
+    currentLives = player->getLives();
+    InitWindow(screenW, screenH, "2D Game");
     SetTargetFPS(60);
 
-    player->setPosition({100.0f, 370.0f}); // Fixed float values
-    player->setSize({30.0f, 30.0f}); // Fixed float values
-    player->setVelocity(0.0f);
-
-    groundBlocks.push_back({{50.0f, 400.0f, 700.0f, 50.0f}});
-    groundBlocks.push_back({{50.0f, 250.0f, 700.0f, 50.0f}});
+    groundBlocks.push_back({{50.0f, 400.0f, 700.0f, 50.0f},GROUND});
+    groundBlocks.push_back({{50.0f, 250.0f, 700.0f, 50.0f},GROUND});
+    groundBlocks.push_back({{1000.0f, 400.0f, 700.0f, 50.0f},LAVA});
 
     while (!WindowShouldClose()) {
         BeginDrawing();
 
         ClearBackground(GetColor(0xFFFFFFFF));
 
-        DrawRectangleRec(groundBlocks[0].rect, GetColor(0x000000FF));
-        DrawRectangleRec(groundBlocks[1].rect, GetColor(0x000000FF));
-
         processGame();
 
         updateScreen();
 
         EndDrawing();
+
+        if(gameOver)break;
     }
     CloseWindow();
+    titleScreen();
 }
 
 void Game::updateScreen() {
-    DrawRectangleV(player->getPosition(), player->getSize(), GetColor(0xFF0000FF));
+    Color currentColor = GetColor(0x000000FF);
+    ClearBackground(GetColor(0xFFFFFFFF));
+    for(int i = 0; i < groundBlocks.size(); i++){
+        switch(groundBlocks[i].type){
+            case GROUND:{
+                currentColor = GetColor(0x000000FF);
+                break;
+            }
+            case LAVA:{
+                currentColor = GetColor(0xFF0000FF);
+                break;
+            }
+        }
+        DrawRectangleRec({groundBlocks[i].rect.x+draw_offset,groundBlocks[i].rect.y,groundBlocks[i].rect.width,groundBlocks[i].rect.height}, currentColor);
+    }
+    DrawRectangleV({player->getPosition().x+draw_offset, player->getPosition().y}, player->getSize(), GetColor(0x2C4F42FF));
 }
 
 int jump_count = 0;
@@ -52,17 +68,22 @@ void Game::processGame() {
 
     for (int i = 0; i < groundBlocks.size(); i++) {
         if (CheckCollisionRecs({player->getPosition().x, player->getPosition().y, player->getSize().x, player->getSize().y}, groundBlocks[i].rect)) {
-            if (collidedFromTop(player->getOldPosition(), player->getPosition(), groundBlocks[i].rect)) {
-                player->setPosition({player->getPosition().x, groundBlocks[i].rect.y - player->getSize().y});
-                player->setVelocity(0.0f);
-                jump_count = 0;
-            } else if (collidedFromBottom(player->getOldPosition(), player->getPosition(), groundBlocks[i].rect)) {
-                player->setPosition({player->getPosition().x, groundBlocks[i].rect.y + groundBlocks[i].rect.height});
-                player->setVelocity(0.0f);
-            } else if (collidedFromLeft(player->getOldPosition(), player->getPosition(), groundBlocks[i].rect)) {
-                player->setPosition({groundBlocks[i].rect.x - player->getSize().x, player->getPosition().y});
-            } else if (collidedFromRight(player->getOldPosition(), player->getPosition(), groundBlocks[i].rect)) {
-                player->setPosition({groundBlocks[i].rect.x + groundBlocks[i].rect.width, player->getPosition().y});
+            if(groundBlocks[i].type == GROUND){
+                if (collidedFromTop(player->getOldPosition(), player->getPosition(), groundBlocks[i].rect)) {
+                    player->setPosition({player->getPosition().x, groundBlocks[i].rect.y - player->getSize().y});
+                    player->setVelocity(0.0f);
+                    jump_count = 0;
+                } else if (collidedFromBottom(player->getOldPosition(), player->getPosition(), groundBlocks[i].rect)) {
+                    player->setPosition({player->getPosition().x, groundBlocks[i].rect.y + groundBlocks[i].rect.height});
+                    player->setVelocity(0.0f);
+                } else if (collidedFromLeft(player->getOldPosition(), player->getPosition(), groundBlocks[i].rect)) {
+                    player->setPosition({groundBlocks[i].rect.x - player->getSize().x, player->getPosition().y});
+                } else if (collidedFromRight(player->getOldPosition(), player->getPosition(), groundBlocks[i].rect)) {
+                    player->setPosition({groundBlocks[i].rect.x + groundBlocks[i].rect.width, player->getPosition().y});
+                }
+            }
+            else if(groundBlocks[i].type == LAVA){
+                processDeath();
             }
         }
     }
@@ -78,6 +99,13 @@ void Game::processGame() {
     if (IsKeyPressed(KEY_UP) && jump_count < 2) {
         player->setVelocity(-9.0f);
         jump_count++;
+    }
+
+    while(player->getPosition().x < (screenW/4-draw_offset)){
+        draw_offset++;
+    }
+    while(player->getPosition().x > (screenW/2-draw_offset)){
+        draw_offset--;
     }
 }
 
@@ -95,4 +123,15 @@ bool Game::collidedFromRight(Vector2 oldPos, Vector2 newPos, Rectangle rect) {
 
 bool Game::collidedFromBottom(Vector2 oldPos, Vector2 newPos, Rectangle rect) {
     return oldPos.y >= rect.y + rect.height && newPos.y < rect.y + rect.height;
+}
+
+void Game::processDeath(){
+    newPlayer = new Player;
+    player =  newPlayer;
+    currentLives--;
+    player->setLives(currentLives);
+    if(player->getLives()==0){
+        gameOver =1;
+    }
+    draw_offset = 0;
 }

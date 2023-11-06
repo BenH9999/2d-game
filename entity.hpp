@@ -1,9 +1,13 @@
 #pragma once
 
-#include "game.hpp"
+#include <raylib.h>
+#include <vector>
+#include <iostream>
 
-class entity{
+class Entity{
     public:
+        Entity();
+
         Vector2 getPosition();
         Vector2 getOldPosition();
         Vector2 getSize();
@@ -13,7 +17,7 @@ class entity{
         void setOldPosition(Vector2 newOldPos);
         void setSize(Vector2 newSize);
         void setVelocity(float newVelocity);
-    private:
+    protected:
         Vector2 position;
         Vector2 oldPosition;
         Vector2 size;

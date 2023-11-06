@@ -1,29 +1,28 @@
 #include "game.hpp"
 
-player* newPlayer = new player;
-std::vector<groundBlock> groundBlocks;
+Game::Game() {
+    player = nullptr;
+}
 
-void initGame(){
-    InitWindow(800,450,"2D Game");
+void Game::initGame() {
+    player = new Player;
+    InitWindow(800, 450, "2D Game");
     SetTargetFPS(60);
-    Font f = LoadFont("font/minecraft.ttf");
-    //player newPlayer = {.position=0};
 
-    newPlayer->position = {(float)100, (float)370};
-    newPlayer->size = {30,30};
-    newPlayer->velocity = 0;
-    groundBlocks.push_back({50,400,700,50});
-    groundBlocks.push_back({50,250,700,50});
+    player->setPosition({100.0f, 370.0f}); // Fixed float values
+    player->setSize({30.0f, 30.0f}); // Fixed float values
+    player->setVelocity(0.0f);
 
-    while(!WindowShouldClose()){
+    groundBlocks.push_back({{50.0f, 400.0f, 700.0f, 50.0f}});
+    groundBlocks.push_back({{50.0f, 250.0f, 700.0f, 50.0f}});
+
+    while (!WindowShouldClose()) {
         BeginDrawing();
 
-        ClearBackground(GetColor(0xffffffff));
+        ClearBackground(GetColor(0xFFFFFFFF));
 
-        //ground
-
-        DrawRectangleRec(groundBlocks[0].rect,GetColor(0x000000ff));
-        DrawRectangleRec(groundBlocks[1].rect,GetColor(0x000000ff));
+        DrawRectangleRec(groundBlocks[0].rect, GetColor(0x000000FF));
+        DrawRectangleRec(groundBlocks[1].rect, GetColor(0x000000FF));
 
         processGame();
 
@@ -31,67 +30,69 @@ void initGame(){
 
         EndDrawing();
     }
+    CloseWindow();
 }
- 
-void updateScreen(){
-    DrawRectangleV(newPlayer->position,newPlayer->size,GetColor(0xff0000ff));
+
+void Game::updateScreen() {
+    DrawRectangleV(player->getPosition(), player->getSize(), GetColor(0xFF0000FF));
 }
 
 int jump_count = 0;
-void processGame(){
-    if(IsKeyDown(KEY_RIGHT)) newPlayer->position.x += 4.0f;
-    if(IsKeyDown(KEY_LEFT)) newPlayer->position.x -= 4.0f;
 
-    newPlayer->position.y += newPlayer->velocity;
-    newPlayer->velocity += 0.4f;
+void Game::processGame() {
+    if (IsKeyDown(KEY_RIGHT)) {
+        player->setPosition({player->getPosition().x + 4.0f, player->getPosition().y});
+    }
+    if (IsKeyDown(KEY_LEFT)) {
+        player->setPosition({player->getPosition().x - 4.0f, player->getPosition().y});
+    }
 
-    for(int i = 0; i < groundBlocks.size();i++){
-        if (CheckCollisionRecs({newPlayer->position.x,newPlayer->position.y, newPlayer->size.x,newPlayer->size.y}, groundBlocks[i].rect)) {
-            if (collidedFromTop(newPlayer->oldPosition, newPlayer->position, groundBlocks[i].rect)) {
-                newPlayer->position.y = groundBlocks[i].rect.y - newPlayer->size.y;
-                newPlayer->velocity = 0;
+    player->setPosition({player->getPosition().x, player->getPosition().y + player->getVelocity()});
+    player->setVelocity(player->getVelocity() + 0.4f);
+
+    for (int i = 0; i < groundBlocks.size(); i++) {
+        if (CheckCollisionRecs({player->getPosition().x, player->getPosition().y, player->getSize().x, player->getSize().y}, groundBlocks[i].rect)) {
+            if (collidedFromTop(player->getOldPosition(), player->getPosition(), groundBlocks[i].rect)) {
+                player->setPosition({player->getPosition().x, groundBlocks[i].rect.y - player->getSize().y});
+                player->setVelocity(0.0f);
                 jump_count = 0;
+            } else if (collidedFromBottom(player->getOldPosition(), player->getPosition(), groundBlocks[i].rect)) {
+                player->setPosition({player->getPosition().x, groundBlocks[i].rect.y + groundBlocks[i].rect.height});
+                player->setVelocity(0.0f);
+            } else if (collidedFromLeft(player->getOldPosition(), player->getPosition(), groundBlocks[i].rect)) {
+                player->setPosition({groundBlocks[i].rect.x - player->getSize().x, player->getPosition().y});
+            } else if (collidedFromRight(player->getOldPosition(), player->getPosition(), groundBlocks[i].rect)) {
+                player->setPosition({groundBlocks[i].rect.x + groundBlocks[i].rect.width, player->getPosition().y});
             }
-            else if (collidedFromBottom(newPlayer->oldPosition, newPlayer->position, groundBlocks[i].rect)) {
-                newPlayer->position.y = groundBlocks[i].rect.y + groundBlocks[i].rect.height;
-                newPlayer->velocity = 0.0;
-            }
-            else if (collidedFromLeft(newPlayer->oldPosition, newPlayer->position, groundBlocks[i].rect)) {
-                newPlayer->position.x = groundBlocks[i].rect.x - newPlayer->size.x;
-            }
-            else if (collidedFromRight(newPlayer->oldPosition, newPlayer->position, groundBlocks[i].rect)) {
-                newPlayer->position.x = groundBlocks[i].rect.x + groundBlocks[i].rect.width;
-            }
-
         }
     }
 
-    newPlayer->oldPosition = newPlayer->position;
+    player->setOldPosition(player->getPosition());
 
-    if (newPlayer->position.y >= (float)420) {
-        newPlayer->position.y = (float)420;
-        newPlayer->velocity = 0;
+    if (player->getPosition().y >= 420.0f) {
+        player->setPosition({player->getPosition().x, 420.0f});
+        player->setVelocity(0.0f);
         jump_count = 0;
     }
 
     if (IsKeyPressed(KEY_UP) && jump_count < 2) {
-        newPlayer->velocity = -9.0f;
+        player->setVelocity(-9.0f);
         jump_count++;
     }
 }
 
-bool collidedFromTop(Vector2 oldPos, Vector2 newPos, Rectangle rect) {
-    return oldPos.y + newPlayer->size.y <= rect.y && newPos.y + newPlayer->size.y >= rect.y;
+bool Game::collidedFromTop(Vector2 oldPos, Vector2 newPos, Rectangle rect) {
+    return oldPos.y + player->getSize().y <= rect.y && newPos.y + player->getSize().y >= rect.y;
 }
 
-bool collidedFromLeft(Vector2 oldPos, Vector2 newPos, Rectangle rect) {
-    return newPos.x < rect.x + rect.width && oldPos.x + newPlayer->size.x <= rect.x;
+bool Game::collidedFromLeft(Vector2 oldPos, Vector2 newPos, Rectangle rect) {
+    return newPos.x < rect.x + rect.width && oldPos.x + player->getSize().x <= rect.x;
 }
 
-bool collidedFromRight(Vector2 oldPos, Vector2 newPos, Rectangle rect) {
-    return newPos.x + newPlayer->size.x > rect.x && oldPos.x >= rect.x + rect.width;
+bool Game::collidedFromRight(Vector2 oldPos, Vector2 newPos, Rectangle rect) {
+    return newPos.x + player->getSize().x > rect.x && oldPos.x >= rect.x + rect.width;
 }
 
-bool collidedFromBottom(Vector2 oldPos, Vector2 newPos, Rectangle rect) {
+bool Game::collidedFromBottom(Vector2 oldPos, Vector2 newPos, Rectangle rect) {
     return oldPos.y >= rect.y + rect.height && newPos.y < rect.y + rect.height;
 }

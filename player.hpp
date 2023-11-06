@@ -2,6 +2,7 @@
 
 #include "entity.hpp"
 
-class player : entity{
-
+class Player : public Entity {
+    public:
+        Player();
 };

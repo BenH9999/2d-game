@@ -4,6 +4,7 @@ int screenW = 800;
 int screenH = 450;
 int currentMouseX = 0;
 int currentMouseY = 0;
+bool runGame = 0;
 
 void titleScreen(){
     InitWindow(screenW,screenH,"2D Game");
@@ -24,13 +25,19 @@ void titleScreen(){
             currentMouseX = GetMouseX();
             currentMouseY = GetMouseY();
             if(currentMouseX >= 300 && currentMouseX <= 500 && currentMouseY >= 150 && currentMouseY <= 250){
-                EndDrawing();
-                CloseWindow();
-                initGame();
+                runGame = 1;
             }
         }
 
         EndDrawing();
+        if(runGame){
+            CloseWindow();
+            break;
+        }
+    }
+    if(runGame){
+        Game g;
+        g.initGame();
     }
     CloseWindow();
 }

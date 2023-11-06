@@ -16,11 +16,6 @@ void Game::initGame() {
     InitWindow(screenW, screenH, "2D Game");
     SetTargetFPS(60);
 
-    //groundBlocks.push_back({{50, 400, 700, 50},NORMAL});
-    //groundBlocks.push_back({{50, 250, 700, 50},NORMAL});
-    //groundBlocks.push_back({{1000, 400, 700, 50},LAVA});
-    //groundBlocks.push_back({{1000, 300, 100, 50},NORMAL});
-
     loadLevelFromFile(1);
 
     while (!WindowShouldClose()) {

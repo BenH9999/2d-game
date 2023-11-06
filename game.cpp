@@ -1,26 +1,32 @@
-#include "game.hpp"
+#include "include/game.hpp"
+#include "include/colour.hpp"
+#include "include/levels.hpp"
 
 Game::Game() {
     player = nullptr;
     draw_offset = 0;
     gameOver = 0;
+    groundBlocks={};
 }
 
 void Game::initGame() {
     player = new Player;
-    player->setLives(2);
+    player->setLives(5);
     currentLives = player->getLives();
     InitWindow(screenW, screenH, "2D Game");
     SetTargetFPS(60);
 
-    groundBlocks.push_back({{50.0f, 400.0f, 700.0f, 50.0f},GROUND});
-    groundBlocks.push_back({{50.0f, 250.0f, 700.0f, 50.0f},GROUND});
-    groundBlocks.push_back({{1000.0f, 400.0f, 700.0f, 50.0f},LAVA});
+    //groundBlocks.push_back({{50, 400, 700, 50},NORMAL});
+    //groundBlocks.push_back({{50, 250, 700, 50},NORMAL});
+    //groundBlocks.push_back({{1000, 400, 700, 50},LAVA});
+    //groundBlocks.push_back({{1000, 300, 100, 50},NORMAL});
+
+    loadLevelFromFile(1);
 
     while (!WindowShouldClose()) {
         BeginDrawing();
 
-        ClearBackground(GetColor(0xFFFFFFFF));
+        ClearBackground(backgroundC);
 
         processGame();
 
@@ -36,21 +42,21 @@ void Game::initGame() {
 
 void Game::updateScreen() {
     Color currentColor = GetColor(0x000000FF);
-    ClearBackground(GetColor(0xFFFFFFFF));
+    ClearBackground(backgroundC);
     for(int i = 0; i < groundBlocks.size(); i++){
         switch(groundBlocks[i].type){
-            case GROUND:{
-                currentColor = GetColor(0x000000FF);
+            case NORMAL:{
+                currentColor = normalGroundC;
                 break;
             }
             case LAVA:{
-                currentColor = GetColor(0xFF0000FF);
+                currentColor = lavaC;
                 break;
             }
         }
         DrawRectangleRec({groundBlocks[i].rect.x+draw_offset,groundBlocks[i].rect.y,groundBlocks[i].rect.width,groundBlocks[i].rect.height}, currentColor);
     }
-    DrawRectangleV({player->getPosition().x+draw_offset, player->getPosition().y}, player->getSize(), GetColor(0x2C4F42FF));
+    DrawRectangleV({player->getPosition().x+draw_offset, player->getPosition().y}, player->getSize(), playerC);
 }
 
 int jump_count = 0;
@@ -68,7 +74,7 @@ void Game::processGame() {
 
     for (int i = 0; i < groundBlocks.size(); i++) {
         if (CheckCollisionRecs({player->getPosition().x, player->getPosition().y, player->getSize().x, player->getSize().y}, groundBlocks[i].rect)) {
-            if(groundBlocks[i].type == GROUND){
+            if(groundBlocks[i].type == NORMAL){
                 if (collidedFromTop(player->getOldPosition(), player->getPosition(), groundBlocks[i].rect)) {
                     player->setPosition({player->getPosition().x, groundBlocks[i].rect.y - player->getSize().y});
                     player->setVelocity(0.0f);
@@ -123,6 +129,14 @@ bool Game::collidedFromRight(Vector2 oldPos, Vector2 newPos, Rectangle rect) {
 
 bool Game::collidedFromBottom(Vector2 oldPos, Vector2 newPos, Rectangle rect) {
     return oldPos.y >= rect.y + rect.height && newPos.y < rect.y + rect.height;
+}
+
+void Game::setGroundBlocks(std::vector<GroundBlock> newGroundBlocks){
+    groundBlocks = newGroundBlocks;
+}
+
+std::vector<GroundBlock> Game::getGroundBlocks(){
+    return groundBlocks;
 }
 
 void Game::processDeath(){

@@ -10,9 +10,10 @@ const int screenW = 800;
 const int screenH = 450;
 
 enum groundType{
-    GROUND,
+    NORMAL,
     LAVA,
-    WATER
+    WATER,
+    FINISH
 };
 
 struct GroundBlock {
@@ -33,8 +34,10 @@ public:
     bool collidedFromLeft(Vector2 oldPos, Vector2 newPos, Rectangle rect);
     bool collidedFromRight(Vector2 oldPos, Vector2 newPos, Rectangle rect);
     bool collidedFromBottom(Vector2 oldPos, Vector2 newPos, Rectangle rect);
+    void setGroundBlocks(std::vector<GroundBlock> newGroundBlocks);
+    std::vector<GroundBlock> getGroundBlocks();
 
-private:
+protected:
     Player* player;
     std::vector<GroundBlock> groundBlocks;
     float draw_offset;
@@ -42,3 +45,5 @@ private:
     int currentLives;
     bool gameOver;
 };
+
+extern Game g;

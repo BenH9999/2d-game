@@ -1,4 +1,4 @@
-#include "menu_screen.hpp"
+#include "include/menu_screen.hpp"
 
 int main(){
     titleScreen();

@@ -1,4 +1,4 @@
-#include "player.hpp"
+#include "include/player.hpp"
 
 Player::Player(){
     position = {100.0f, 370.0f};

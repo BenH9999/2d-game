@@ -1,8 +1,10 @@
-#include "menu_screen.hpp"
+#include "include/menu_screen.hpp"
 
 int currentMouseX = 0;
 int currentMouseY = 0;
 bool runGame = 0;
+
+Game g;
 
 void titleScreen(){
     InitWindow(screenW,screenH,"2D Game");
@@ -35,7 +37,6 @@ void titleScreen(){
     }
     if(runGame){
         runGame = 0;
-        Game g;
         g.initGame();
     }
     CloseWindow();

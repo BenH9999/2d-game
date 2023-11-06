@@ -3,7 +3,7 @@
 std::vector<GroundBlock> newGroundBlocks;
 
 void loadLevelFromFile(int level){
-    std::string filename = "levels/"+ std::to_string(level) + ".txt";
+    std::string filename = "levels/"+ std::to_string(level) + "_ground.txt";
     std::fstream file;
     file.open(filename, std::ios::in);
 

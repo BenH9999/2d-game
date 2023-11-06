@@ -44,6 +44,8 @@ protected:
     Player* newPlayer;
     int currentLives;
     bool gameOver;
+    Font f;
+    std::string livesStr;
 };
 
 extern Game g;

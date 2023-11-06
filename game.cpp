@@ -16,6 +16,8 @@ void Game::initGame() {
     InitWindow(screenW, screenH, "2D Game");
     SetTargetFPS(60);
 
+    f = LoadFont("font/minecraft.ttf");
+
     loadLevelFromFile(1);
 
     while (!WindowShouldClose()) {
@@ -24,6 +26,8 @@ void Game::initGame() {
         ClearBackground(backgroundC);
 
         processGame();
+
+        livesStr = "Lives: "+ std::to_string(currentLives);
 
         updateScreen();
 
@@ -52,6 +56,7 @@ void Game::updateScreen() {
         DrawRectangleRec({groundBlocks[i].rect.x+draw_offset,groundBlocks[i].rect.y,groundBlocks[i].rect.width,groundBlocks[i].rect.height}, currentColor);
     }
     DrawRectangleV({player->getPosition().x+draw_offset, player->getPosition().y}, player->getSize(), playerC);
+    DrawTextEx(f,livesStr.c_str(),{25,25},25,0,GetColor(0x000000ff));
 }
 
 int jump_count = 0;

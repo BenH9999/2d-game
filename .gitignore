@@ -52,7 +52,7 @@ Mkfile.old
 dkms.conf
 main
 
-*.txt
+#*.txt
 *.json
 
 makefile

@@ -4,9 +4,11 @@
 
 Game::Game() {
     player = nullptr;
+    goo = nullptr;
     draw_offset = 0;
     gameOver = 0;
     groundBlocks={};
+    goomba_vector={};
 }
 
 void Game::initGame() {
@@ -19,6 +21,12 @@ void Game::initGame() {
     f = LoadFont("font/minecraft.ttf");
 
     loadLevelFromFile(1);
+
+    for(int i = 0; i < 2;i++){
+        goo = new goomba;
+        if(i==1) goo->setPosition({600.0f,375.0f});
+        goomba_vector.push_back(goo);
+    }
 
     while (!WindowShouldClose()) {
         BeginDrawing();
@@ -40,7 +48,7 @@ void Game::initGame() {
 }
 
 void Game::updateScreen() {
-    Color currentColor = GetColor(0x000000FF);
+    Color currentColor = black;
     ClearBackground(backgroundC);
     for(int i = 0; i < groundBlocks.size(); i++){
         switch(groundBlocks[i].type){
@@ -54,6 +62,9 @@ void Game::updateScreen() {
             }
         }
         DrawRectangleRec({groundBlocks[i].rect.x+draw_offset,groundBlocks[i].rect.y,groundBlocks[i].rect.width,groundBlocks[i].rect.height}, currentColor);
+    }
+    for(int i = 0; i < goomba_vector.size();i++){
+        DrawRectangleV({goomba_vector[i]->getPosition().x +draw_offset, goomba_vector[i]->getPosition().y},goomba_vector[i]->getSize(), GOOMBA);
     }
     DrawRectangleV({player->getPosition().x+draw_offset, player->getPosition().y}, player->getSize(), playerC);
     DrawTextEx(f,livesStr.c_str(),{25,25},25,0,GetColor(0x000000ff));
@@ -89,6 +100,23 @@ void Game::processGame() {
                 }
             }
             else if(groundBlocks[i].type == LAVA){
+                processDeath();
+            }
+        }
+    }
+
+    for(int i = 0; i < goomba_vector.size();i++){
+        if(CheckCollisionRecs({player->getPosition().x, player->getPosition().y, player->getSize().x, player->getSize().y},{goomba_vector[i]->getPosition().x, goomba_vector[i]->getPosition().y, goomba_vector[i]->getSize().x, goomba_vector[i]->getSize().y})){
+            if(collidedFromTop(player->getOldPosition(),player->getPosition(), {goomba_vector[i]->getPosition().x,goomba_vector[i]->getPosition().y,goomba_vector[i]->getSize().x,goomba_vector[i]->getSize().y})){
+                goomba_vector.erase(goomba_vector.begin() + i);
+            }
+            else if(collidedFromBottom(player->getOldPosition(),player->getPosition(), {goomba_vector[i]->getPosition().x,goomba_vector[i]->getPosition().y,goomba_vector[i]->getSize().x,goomba_vector[i]->getSize().y})){
+                processDeath();
+            }
+            else if(collidedFromLeft(player->getOldPosition(),player->getPosition(), {goomba_vector[i]->getPosition().x,goomba_vector[i]->getPosition().y,goomba_vector[i]->getSize().x,goomba_vector[i]->getSize().y})){
+                processDeath();
+            }
+            else if(collidedFromRight(player->getOldPosition(),player->getPosition(), {goomba_vector[i]->getPosition().x,goomba_vector[i]->getPosition().y,goomba_vector[i]->getSize().x,goomba_vector[i]->getSize().y})){
                 processDeath();
             }
         }

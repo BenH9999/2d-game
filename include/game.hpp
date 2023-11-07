@@ -5,6 +5,7 @@
 #include <iostream>
 #include "player.hpp"
 #include "menu_screen.hpp"
+#include "goomba.hpp"
 
 const int screenW = 800;
 const int screenH = 450;
@@ -39,7 +40,9 @@ public:
 
 protected:
     Player* player;
+    goomba* goo;
     std::vector<GroundBlock> groundBlocks;
+    std::vector<goomba*> goomba_vector;
     float draw_offset;
     Player* newPlayer;
     int currentLives;
@@ -49,3 +52,4 @@ protected:
 };
 
 extern Game g;
+extern int entityCount;

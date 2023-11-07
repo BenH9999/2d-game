@@ -22,11 +22,15 @@ void Game::initGame() {
 
     loadLevelFromFile(1);
 
-    for(int i = 0; i < 2;i++){
+    /*for(int i = 0; i < 2;i++){
         goo = new goomba;
-        if(i==1) goo->setPosition({600.0f,375.0f});
+        goo->setSpawnPosition({500.0f,375.0f});
+        if(i==1){
+             goo->setPosition({600.0f,375.0f});
+             goo->setSpawnPosition({600.0f,375.0f});
+        }
         goomba_vector.push_back(goo);
-    }
+    }*/
 
     while (!WindowShouldClose()) {
         BeginDrawing();
@@ -36,6 +40,8 @@ void Game::initGame() {
         processGame();
 
         livesStr = "Lives: "+ std::to_string(currentLives);
+
+        processAI();
 
         updateScreen();
 
@@ -50,7 +56,7 @@ void Game::initGame() {
 void Game::updateScreen() {
     Color currentColor = black;
     ClearBackground(backgroundC);
-    for(int i = 0; i < groundBlocks.size(); i++){
+    for(size_t i = 0; i < groundBlocks.size(); i++){
         switch(groundBlocks[i].type){
             case NORMAL:{
                 currentColor = normalGroundC;
@@ -60,11 +66,19 @@ void Game::updateScreen() {
                 currentColor = lavaC;
                 break;
             }
+            case WATER:{
+
+            }
+            case FINISH:{
+
+            }
         }
         DrawRectangleRec({groundBlocks[i].rect.x+draw_offset,groundBlocks[i].rect.y,groundBlocks[i].rect.width,groundBlocks[i].rect.height}, currentColor);
     }
-    for(int i = 0; i < goomba_vector.size();i++){
-        DrawRectangleV({goomba_vector[i]->getPosition().x +draw_offset, goomba_vector[i]->getPosition().y},goomba_vector[i]->getSize(), GOOMBA);
+    for(size_t i = 0; i < goomba_vector.size();i++){
+        if(goomba_vector[i]->getAlive()){
+            DrawRectangleV({goomba_vector[i]->getPosition().x +draw_offset, goomba_vector[i]->getPosition().y},goomba_vector[i]->getSize(), GOOMBA);
+        }
     }
     DrawRectangleV({player->getPosition().x+draw_offset, player->getPosition().y}, player->getSize(), playerC);
     DrawTextEx(f,livesStr.c_str(),{25,25},25,0,GetColor(0x000000ff));
@@ -83,7 +97,7 @@ void Game::processGame() {
     player->setPosition({player->getPosition().x, player->getPosition().y + player->getVelocity()});
     player->setVelocity(player->getVelocity() + 0.4f);
 
-    for (int i = 0; i < groundBlocks.size(); i++) {
+    for (size_t i = 0; i < groundBlocks.size(); i++) {
         if (CheckCollisionRecs({player->getPosition().x, player->getPosition().y, player->getSize().x, player->getSize().y}, groundBlocks[i].rect)) {
             if(groundBlocks[i].type == NORMAL){
                 if (collidedFromTop(player->getOldPosition(), player->getPosition(), groundBlocks[i].rect)) {
@@ -105,10 +119,12 @@ void Game::processGame() {
         }
     }
 
-    for(int i = 0; i < goomba_vector.size();i++){
+    for(size_t i = 0; i < goomba_vector.size();i++){
+        if(!goomba_vector[i]->getAlive())
+            continue;
         if(CheckCollisionRecs({player->getPosition().x, player->getPosition().y, player->getSize().x, player->getSize().y},{goomba_vector[i]->getPosition().x, goomba_vector[i]->getPosition().y, goomba_vector[i]->getSize().x, goomba_vector[i]->getSize().y})){
             if(collidedFromTop(player->getOldPosition(),player->getPosition(), {goomba_vector[i]->getPosition().x,goomba_vector[i]->getPosition().y,goomba_vector[i]->getSize().x,goomba_vector[i]->getSize().y})){
-                goomba_vector.erase(goomba_vector.begin() + i);
+                goomba_vector[i]->setAlive(0);
             }
             else if(collidedFromBottom(player->getOldPosition(),player->getPosition(), {goomba_vector[i]->getPosition().x,goomba_vector[i]->getPosition().y,goomba_vector[i]->getSize().x,goomba_vector[i]->getSize().y})){
                 processDeath();
@@ -143,6 +159,18 @@ void Game::processGame() {
     }
 }
 
+void Game::processAI(){
+    if(!goomba_vector.empty()){
+        goombaActions();
+    }
+}
+
+void Game::goombaActions(){
+    for(size_t i = 0; i < goomba_vector.size();i++){
+        goomba_vector[i]->goombaWalkSlowForward();
+    }
+}
+
 bool Game::collidedFromTop(Vector2 oldPos, Vector2 newPos, Rectangle rect) {
     return oldPos.y + player->getSize().y <= rect.y && newPos.y + player->getSize().y >= rect.y;
 }
@@ -167,6 +195,14 @@ std::vector<GroundBlock> Game::getGroundBlocks(){
     return groundBlocks;
 }
 
+void Game::setGoombaVector(std::vector<goomba*> newGoombaVector){
+    goomba_vector = newGoombaVector;
+}
+
+std::vector<goomba*> Game::getGoombas(){
+    return goomba_vector;
+}
+
 void Game::processDeath(){
     newPlayer = new Player;
     player =  newPlayer;
@@ -175,5 +211,16 @@ void Game::processDeath(){
     if(player->getLives()==0){
         gameOver =1;
     }
+
+    resetEntities();
     draw_offset = 0;
+}
+
+void Game::resetEntities(){
+    if(!goomba_vector.empty()){
+        for(size_t i = 0; i < goomba_vector.size();i++){
+            goomba_vector[i]->resetGoomba();
+            goomba_vector[i]->setPosition(goomba_vector[i]->getSpawnPosition());
+        }
+    }
 }

@@ -5,6 +5,10 @@
 class goomba : public Entity{
     public:
         goomba();
+        //void goombaJumpOnTimer();
+        void goombaWalkSlowForward();
+        void resetGoomba();
+        void processFalling();
 
         bool getAlive();
 

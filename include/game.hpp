@@ -29,7 +29,10 @@ public:
     Game();
     void initGame();
     void processDeath();
+    void resetEntities();
     void processGame();
+    void processAI();
+    void goombaActions();
     void updateScreen();
     bool collidedFromTop(Vector2 oldPos, Vector2 newPos, Rectangle rect);
     bool collidedFromLeft(Vector2 oldPos, Vector2 newPos, Rectangle rect);
@@ -37,6 +40,8 @@ public:
     bool collidedFromBottom(Vector2 oldPos, Vector2 newPos, Rectangle rect);
     void setGroundBlocks(std::vector<GroundBlock> newGroundBlocks);
     std::vector<GroundBlock> getGroundBlocks();
+    void setGoombaVector(std::vector<goomba*> newGoombaVector);
+    std::vector<goomba*> getGoombas();
 
 protected:
     Player* player;

@@ -12,6 +12,10 @@ Vector2 Entity::getOldPosition(){
     return oldPosition;
 }
 
+Vector2 Entity::getSpawnPosition(){
+    return spawnPosition;
+}
+
 Vector2 Entity::getSize(){
     return size;
 }
@@ -26,6 +30,10 @@ void Entity::setPosition(Vector2 newPos){
 
 void Entity::setOldPosition(Vector2 newOldPos){
     oldPosition = newOldPos;
+}
+
+void Entity::setSpawnPosition(Vector2 newSpawnPosition){
+    spawnPosition = newSpawnPosition;
 }
 
 void Entity::setSize(Vector2 newSize){
